@@ -16,12 +16,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        registerForPushNotifications()
         return true
     }
 
+    private func registerForPushNotifications() {
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.delegate = self
+        notificationCenter.requestAuthorization(options: [.alert, .sound, .badge]) { allowed, _ in
+            guard allowed else { return }
+            
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+    }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         PushNotifications.updatePushNotificationToken(deviceToken)
+        print("Zendesk - Device Token\( deviceToken.base64EncodedString())")
+        
+        let deviceTokenString = deviceToken.hexString
+        print("Zendesk - iPHONE TOKEN: \(deviceTokenString)")
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
@@ -32,10 +48,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let userInfo = notification.request.content.userInfo
-
+        
         // This checks whether a received push notification should be displayed by Messaging
         let shouldBeDisplayed = PushNotifications.shouldBeDisplayed(userInfo)
-
+        
         switch shouldBeDisplayed {
         case .messagingShouldDisplay:
             // This push belongs to Messaging and the SDK is able to display it to the end user
@@ -50,7 +66,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         case .notFromMessaging:
             // This push does not belong to Messaging
             // If you have push notifications in your app, place your code here
-
+            
             // If not, just call the `completionHandler`
             completionHandler([])
         @unknown default: break
@@ -86,6 +102,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         completionHandler()
     }
     
+}
+extension Data {
+    var hexString: String {
+        let hexString = map { String(format: "%02.2hhx", $0) }.joined()
+        return hexString
+    }
 }
 
 
