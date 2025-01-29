@@ -96,7 +96,7 @@
       "location" : "https://github.com/zendesk/sdk_zendesk_ios",
       "state" : {
         "revision" : "0515622bfd6e5cd6fd9f893d88b975c95e73832d",
-        "version" : "3.5.0"
+        "version" : "2.27.0"
       }
     }
   ],
